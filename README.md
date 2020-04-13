@@ -24,7 +24,7 @@ easy application performance monitoring with docker and elastic stack
 
 ### Build the containers
 
-***Tip**: you may omit the `--no-cache` if it's the firs run*
+***Tip**: you may omit the `--no-cache` if it's the first run*
 
 ```bash
 docker-compose build --no-cache
