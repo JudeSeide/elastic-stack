@@ -1,0 +1,16 @@
+---
+## Default Logstash configuration from Logstash base image.
+## https://github.com/elastic/logstash/blob/master/docker/data/logstash/config/logstash-full.yml
+#
+http.host: "0.0.0.0"
+
+path.config: "/usr/share/logstash/pipeline/"
+pipeline:
+  batch:
+    size: ${BATCH_SIZE:125}
+    delay: ${BATCH_DELAY:50}
+
+## X-Pack
+xpack.monitoring.elasticsearch.hosts: [ "http://elasticsearch:9200" ]
+xpack.monitoring.elasticsearch.username: elastic
+xpack.monitoring.elasticsearch.password: elastic

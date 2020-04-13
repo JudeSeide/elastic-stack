@@ -1,0 +1,47 @@
+heartbeat.monitors:
+  - type: tcp
+    hosts: ["tcp://db.local.test:3306"]
+    schedule: "@every 10s"
+    timeout: 3s
+    name: mysql
+
+  - type: tcp
+    hosts: ["tcp://sql.local.test:1433"]
+    schedule: "@every 10s"
+    timeout: 3s
+    name: mssql
+
+  - type: tcp
+    hosts: ["tcp://redis.local.test:6379"]
+    schedule: "@every 10s"
+    timeout: 3s
+    name: redis
+
+  - type: tcp
+    hosts: ["tcp://beanstalkd.local.test:11300"]
+    schedule: "@every 10s"
+    timeout: 3s
+    name: beanstalkd
+
+  - type: http
+    urls: ["https://api.local.test/status"]
+    schedule: "@every 60s"
+    timeout: 3s
+    name: api-name
+    check.response.status: 200
+
+
+name: "{{ inventory_hostname }}"
+tags: ["{{ env }}", "gcp"]
+
+
+processors:
+  - add_cloud_metadata: ~
+  - add_host_metadata: ~
+  - add_observer_metadata: ~
+
+output:
+  elasticsearch:
+    hosts: ["http://elasticsearch:9200"]
+    username: elastic
+    password: elastic

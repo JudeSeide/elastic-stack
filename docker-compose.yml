@@ -1,0 +1,92 @@
+version: '2'
+services:
+  httpd:
+    image: httpd:2.4-alpine
+    ports:
+      - "10.10.160.94:80:80"
+    volumes:
+      - ./docker/apache/httpd.conf:/usr/local/apache2/conf/httpd.conf
+      - ./docker/apache/sites/:/usr/local/apache2/conf/extra/
+    volumes_from:
+      - apm-server
+      - elasticsearch
+      - kibana
+      - logstash
+    networks:
+      default:
+        aliases:
+          - syslog.local.test
+          - apm.local.test
+          - elasticsearch.local.test
+          - kibana.local.test
+          - logstash.local.test
+
+  elasticsearch:
+    build: ./docker/elastics/elasticsearch
+    ports:
+      - "10.10.160.94:9200:9200"
+      - "10.10.160.94:9300:9300"
+    networks:
+      default:
+        aliases:
+          - elasticsearch.local.test
+    environment:
+      ES_JAVA_OPTS: "-Xms512m -Xmx512m"
+      ELASTIC_USERNAME: elastic
+      ELASTIC_PASSWORD: elastic
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+      - ./docker/elastics/elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+
+  kibana:
+    build: ./docker/elastics/kibana
+    ports:
+      - "10.10.160.94:5601:5601"
+    networks:
+      default:
+        aliases:
+          - kibana.local.test
+    depends_on:
+      - elasticsearch
+    volumes:
+      - ./docker/elastics/kibana/config/kibana.yml:/usr/share/kibana/config/kibana.yml
+
+  logstash:
+    build: ./docker/elastics/logstash
+    ports:
+      - "10.10.160.94:9600:9600"
+      - "10.10.160.94:5000:5000"
+      - "10.10.160.94:5044:5044"
+      - "10.10.160.94:5045:5045/udp"
+    networks:
+      default:
+        aliases:
+          - logstash.local.test
+    environment:
+      LS_JAVA_OPTS: "-Xms126m -Xmx126m"
+    depends_on:
+      - elasticsearch
+    volumes:
+      - ./docker/elastics/logstash/config/:/usr/share/logstash/config/
+      - ./docker/elastics/logstash/pipeline/:/usr/share/logstash/pipeline/
+
+  apm-server:
+    build: ./docker/elastics/plugins/apm-server
+    ports:
+      - "10.10.160.94:8200:8200"
+    networks:
+      default:
+        aliases:
+          - apm.local.test
+    depends_on:
+      - elasticsearch
+      - kibana
+
+  heartbeat:
+    build: ./docker/elastics/plugins/hearbeat
+    depends_on:
+      - elasticsearch
+      - kibana
+
+volumes:
+  es_data:
